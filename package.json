@@ -1,5 +1,5 @@
 {
-  "name": "webview-face-extraction",
+  "name": "webview-feature-extraction",
   "version": "0.1.0",
   "private": true,
   "scripts": {

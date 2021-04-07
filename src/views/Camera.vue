@@ -25,9 +25,9 @@
           @video-live="onVideoLive"
         />
       </div>
-      <div class="px-3">
+      <div class="px-3 my-4">
         <button
-          class="btn btn-teal my-3 d-flex align-items-center justify-content-center"
+          class="btn btn-teal d-flex align-items-center justify-content-center"
           :disabled="!!errorMessage"
           @click.prevent="onCapture"
         >
@@ -70,6 +70,7 @@ export default {
       document.querySelector('.overlay').appendChild(canvas);
       // close loading
       this.$store.commit('ISLOADING', false);
+      this.$store.commit('SETLOADINGSTATUS', '');
       // face detection
       this.faceDetection(webcam, canvas, canvasSize, 500);
     },
