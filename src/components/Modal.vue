@@ -64,19 +64,15 @@ export default {
       this.$store.commit('SHOWMODAL', false);
     },
     async upload() {
-      const payload = {};
-      this.features.forEach((item, index) => {
-        payload[index] = item;
-      });
       try {
         this.$store.commit('SETLOADINGSTATUS', '特徵上傳中');
         this.$store.commit('ISLOADING', true);
-        console.log('發送成功');
-        // await db.ref('/users').child(this.user.uid).set({
-        //   displayName: this.user.displayName,
-        //   email: this.user.email,
-        //   features: payload,
-        // });
+        await this.$store.dispatch('signup', {
+          uid: this.user.uid,
+          displayName: this.user.displayName,
+          email: this.user.email,
+          features: this.features,
+        });
         this.$store.commit('SETLOADINGSTATUS', '');
         this.$store.commit('SHOWMODAL', false);
         this.$store.commit('ISLOADING', false);

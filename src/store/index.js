@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import $ from 'jquery';
+import axios from 'axios';
 
 Vue.use(Vuex);
 
@@ -18,7 +19,16 @@ export default new Vuex.Store({
     features: [],
     showModal: false,
   },
-  actions: {},
+  actions: {
+    async signup(context, { uid, email, displayName, features }) {
+      const url = `${process.env.VUE_APP_BASE_URL}/api/users/signup`;
+      try {
+        await axios.post(url, { uid, email, displayName, features });
+      } catch (error) {
+        console.log(error);
+      }
+    },
+  },
   mutations: {
     SETUSER(state, { uid, displayName, email }) {
       state.user.uid = uid;

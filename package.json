@@ -8,6 +8,7 @@
     "dev": "vue-cli-service serve"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
     "core-js": "^3.6.5",
     "face-api.js": "^0.22.2",
