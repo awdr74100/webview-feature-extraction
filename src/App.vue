@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <Notification />
     <Loading />
     <Modal />
     <router-view></router-view>
@@ -7,11 +8,13 @@
 </template>
 
 <script>
+import Notification from '@/components/Notification.vue';
 import Loading from '@/components/Loading.vue';
 import Modal from '@/components/Modal.vue';
 
 export default {
   components: {
+    Notification,
     Loading,
     Modal,
   },

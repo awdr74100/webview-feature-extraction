@@ -1,7 +1,7 @@
 <template>
   <div class="container d-flex justify-content-center align-items-center vw-100 vh-100">
     <button
-      class="btn btn-primary font-weight-bolder py-0 px-0 d-flex align-items-center"
+      class="btn btn-primary font-weight-bold py-0 px-0 d-flex align-items-center"
       @click.prevent="signIn"
     >
       <div
@@ -38,7 +38,10 @@ export default {
         this.$store.commit('ISSIGNIN', true);
         this.$router.push({ path: '/camera' });
       } catch (error) {
-        console.log(error);
+        this.$notify({
+          group: 'custom-template',
+          title: error.message,
+        });
       }
     },
   },

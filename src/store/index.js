@@ -3,6 +3,8 @@ import Vuex from 'vuex';
 import $ from 'jquery';
 import axios from 'axios';
 
+const vm = Vue;
+
 Vue.use(Vuex);
 
 export default new Vuex.Store({
@@ -25,7 +27,10 @@ export default new Vuex.Store({
       try {
         await axios.post(url, { uid, email, displayName, features });
       } catch (error) {
-        console.log(error);
+        vm.notify({
+          group: 'custom-template',
+          title: error.message,
+        });
       }
     },
   },

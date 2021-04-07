@@ -60,14 +60,15 @@ export default {
       if (this.modelStatus !== 'loaded') await this.loadModels();
       const webcam = document.querySelector('.webcam');
       const oldCanvas = document.querySelector('.face');
+      const overlay = document.querySelector('.overlay');
       const canvas = faceapi.createCanvasFromMedia(webcam);
       const canvasSize = { width: webcam.clientWidth, height: webcam.clientHeight };
       canvas.classList.add('face');
       faceapi.matchDimensions(canvas, canvasSize);
       // clear canvas
-      if (oldCanvas) document.querySelector('.overlay').removeChild(oldCanvas);
+      if (oldCanvas) overlay.removeChild(oldCanvas);
       // append canvas
-      document.querySelector('.overlay').appendChild(canvas);
+      overlay.appendChild(canvas);
       // close loading
       this.$store.commit('ISLOADING', false);
       this.$store.commit('SETLOADINGSTATUS', '');
@@ -134,20 +135,32 @@ export default {
         if (i !== imageLength - 1) await delay(500);
       }
 
-      const features = await Promise.all(
-        base64Array.map((base64) => {
-          const img = document.createElement('img');
-          img.src = base64;
-          return faceapi
-            .detectSingleFace(img)
-            .withFaceLandmarks()
-            .withFaceDescriptor()
-            .then((feature) => JSON.stringify(feature.descriptor));
-        }),
-      );
-      vm.$store.commit('SETFEATURES', features);
-      vm.spinner = false;
-      vm.$store.commit('SHOWMODAL', true);
+      try {
+        const features = await Promise.all(
+          base64Array.map((base64) => {
+            const img = document.createElement('img');
+            img.src = base64;
+            return faceapi
+              .detectSingleFace(img)
+              .withFaceLandmarks()
+              .withFaceDescriptor()
+              .then((feature) => JSON.stringify(feature.descriptor));
+          }),
+        );
+
+        if (features.includes(null)) throw new Error('');
+
+        vm.$store.commit('SETFEATURES', features);
+        vm.$store.commit('SHOWMODAL', true);
+        vm.spinner = false;
+      } catch (error) {
+        this.$notify({
+          group: 'custom-template',
+          title: '特徵提取失敗，請在試一次',
+          duration: 5000,
+        });
+        vm.spinner = false;
+      }
     },
   },
 };
