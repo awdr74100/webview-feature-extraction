@@ -1,51 +1,69 @@
 <template>
   <div
-    id="userData"
+    id="customModal"
     class="modal fade"
     tabindex="-1"
-    aria-labelledby="userDataLabel"
+    aria-labelledby="customModalLabel"
     aria-hidden="true"
-    data-backdrop="static"
-    data-keyboard="false"
   >
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header bg-teal text-white">
-          <h5 id="userDataLabel" class="modal-title">輸入資料</h5>
+          <h5 id="customModalLabel" class="modal-title">輸入資料</h5>
           <button
             type="button"
-            class="close"
-            data-dismiss="modal"
+            class="btn-close"
+            data-bs-dismiss="modal"
             aria-label="Close"
             @click.prevent="closeModal"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
+          ></button>
         </div>
         <div class="modal-body">
-          <div class="form-group">
-            <label for="displayName">姓名</label>
-            <input v-model="user.displayName" type="text" disabled class="form-control" />
+          <div class="mb-3">
+            <label for="displayName" class="form-label">姓名</label>
+            <input
+              v-model="user.displayName"
+              type="text"
+              disabled
+              class="form-control"
+            />
           </div>
-          <div class="form-group">
-            <label for="email">信箱</label>
-            <input v-model="user.email" type="text" disabled class="form-control" />
+          <div class="mb-3">
+            <label for="email" class="form-label">信箱</label>
+            <input
+              v-model="user.email"
+              type="text"
+              disabled
+              class="form-control"
+            />
           </div>
-          <div class="form-group">
-            <label for="uid">識別碼</label>
-            <input v-model="user.uid" type="text" disabled class="form-control" />
+          <div class="mb-3">
+            <label for="uid" class="form-label">識別碼</label>
+            <input
+              v-model="user.uid"
+              type="text"
+              disabled
+              class="form-control"
+            />
           </div>
         </div>
         <div class="modal-footer">
           <button
             type="button"
             class="btn btn-outline-secondary"
-            data-dismiss="modal"
+            data-bs-dismiss="modal"
             @click.prevent="closeModal"
           >
             取消
           </button>
-          <button type="button" class="btn btn-outline-teal" @click.prevent="upload">確定</button>
+          <button
+            type="button"
+            class="btn btn-outline-teal"
+            data-bs-dismiss="modal"
+            @click.prevent="upload"
+          >
+            確定
+          </button>
         </div>
       </div>
     </div>
@@ -77,7 +95,13 @@ export default {
         this.$store.commit('SHOWMODAL', false);
         this.$store.commit('ISLOADING', false);
       } catch (error) {
-        console.log(error);
+        this.$notify({
+          group: 'custom-template',
+          title: error.message,
+        });
+        this.$store.commit('SETLOADINGSTATUS', '');
+        this.$store.commit('SHOWMODAL', false);
+        this.$store.commit('ISLOADING', false);
       }
     },
   },

@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import $ from 'jquery';
+import { Modal } from 'bootstrap/dist/js/bootstrap.bundle';
 import axios from 'axios';
 
 const vm = Vue;
@@ -8,7 +8,7 @@ const vm = Vue;
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-  strict: process.env.NODE_ENV === 'development',
+  strict: import.meta.env.DEV,
   state: {
     user: {
       uid: '',
@@ -23,7 +23,7 @@ export default new Vuex.Store({
   },
   actions: {
     async signup(context, { uid, email, displayName, features }) {
-      const url = `${process.env.VUE_APP_BASE_URL}/api/users/signup`;
+      const url = `${import.meta.env.VITE_APP_BACKEND_URL}/api/users/signup`;
       try {
         await axios.post(url, { uid, email, displayName, features });
       } catch (error) {
@@ -53,8 +53,12 @@ export default new Vuex.Store({
       state.features = features;
     },
     SHOWMODAL(state, status) {
+      const modal = new Modal('#customModal', {
+        backdrop: 'static',
+        keyboard: false,
+      });
       state.showModal = status;
-      $('#userData').modal(status ? 'show' : 'hide');
+      modal[status ? 'show' : 'hide']();
     },
   },
 });

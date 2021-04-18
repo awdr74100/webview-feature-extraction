@@ -4,14 +4,20 @@
       <div class="p-3 w-100">
         <select v-model="deviceId" class="form-control">
           <option value="" disabled>-- Select Camera --</option>
-          <option v-for="camera in cameras" :key="camera.deviceId" :value="camera.deviceId">
+          <option
+            v-for="camera in cameras"
+            :key="camera.deviceId"
+            :value="camera.deviceId"
+          >
             {{ camera.label }}
           </option>
         </select>
       </div>
       <div v-if="errorMessage" class="p-3 text-danger">{{ errorMessage }}</div>
       <div v-else class="p-3 text-danger">請在人臉檢測框為綠色時進行提取！</div>
-      <div class="mx-3 overlay d-flex align-items-center justify-content-center">
+      <div
+        class="mx-3 overlay d-flex align-items-center justify-content-center"
+      >
         <vue-web-cam
           ref="webcam"
           class="webcam"
@@ -27,12 +33,14 @@
       </div>
       <div class="px-3 my-4">
         <button
-          class="btn btn-teal d-flex align-items-center justify-content-center"
+          class="btn btn-teal text-white d-flex align-items-center justify-content-center"
           :disabled="!!errorMessage"
           @click.prevent="onCapture"
         >
           <span>提取特徵</span>
-          <i v-if="spinner" class="fas fa-spinner fa-spin text-white ml-3"></i>
+          <span v-if="spinner" class="text-white ms-3">
+            <font-awesome-icon :icon="['fas', 'spinner']" spin />
+          </span>
         </button>
       </div>
     </div>
@@ -40,10 +48,14 @@
 </template>
 
 <script>
-import * as faceapi from 'face-api.js';
-import delay from '@/utils/delay';
+import * as faceapi from '@vladmandic/face-api';
+import delay from '../utils/delay';
 
 export default {
+  beforeRouteEnter(to, from, next) {
+    if (to.hash) return next(`${to.path}?${to.hash.substr(1)}`);
+    return next();
+  },
   data: () => ({
     deviceId: '',
     cameras: [],
@@ -56,13 +68,33 @@ export default {
     this.$store.commit('ISLOADING', true);
   },
   methods: {
+    async getUserInfo() {
+      try {
+        const { access_token: accessToken } = this.$route.query;
+        const url = `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${accessToken}`;
+        const { data } = await this.axios.get(url);
+        this.$store.commit('SETUSER', {
+          uid: data.id,
+          displayName: data.name,
+          email: data.email,
+        });
+      } catch (error) {
+        this.$notify({
+          group: 'custom-template',
+          title: error.message,
+        });
+      }
+    },
     async onVideoLive() {
       if (this.modelStatus !== 'loaded') await this.loadModels();
       const webcam = document.querySelector('.webcam');
       const oldCanvas = document.querySelector('.face');
       const overlay = document.querySelector('.overlay');
       const canvas = faceapi.createCanvasFromMedia(webcam);
-      const canvasSize = { width: webcam.clientWidth, height: webcam.clientHeight };
+      const canvasSize = {
+        width: webcam.clientWidth,
+        height: webcam.clientHeight,
+      };
       canvas.classList.add('face');
       faceapi.matchDimensions(canvas, canvasSize);
       // clear canvas
@@ -90,10 +122,9 @@ export default {
     async loadModels() {
       this.$store.commit('SETLOADINGSTATUS', '模型載入中');
       await Promise.all([
-        faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-        faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-        faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
+        faceapi.nets.faceLandmark68TinyNet.loadFromUri('/models'),
         faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
+        faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
       ]);
       this.modelStatus = 'loaded';
     },
@@ -104,7 +135,9 @@ export default {
           new faceapi.TinyFaceDetectorOptions(),
         );
         const resizeDetections = faceapi.resizeResults(detections, canvasSize);
-        canvas.getContext('2d').clearRect(0, 0, canvasSize.width, canvasSize.height);
+        canvas
+          .getContext('2d')
+          .clearRect(0, 0, canvasSize.width, canvasSize.height);
         resizeDetections.forEach((detection) => {
           const score = Math.ceil(detection.score * 100) / 100;
           new faceapi.draw.DrawBox(
@@ -116,9 +149,13 @@ export default {
             },
             { boxColor: score > 0.85 ? '#20c997' : '#6c757d' },
           ).draw(canvas);
-          new faceapi.draw.DrawTextField([`${score}`], detection.box.bottomLeft, {
-            backgroundColor: score > 0.85 ? '#20c997' : '#6c757d',
-          }).draw(canvas);
+          new faceapi.draw.DrawTextField(
+            [`${score}`],
+            detection.box.bottomLeft,
+            {
+              backgroundColor: score > 0.85 ? '#20c997' : '#6c757d',
+            },
+          ).draw(canvas);
         });
       }, ms);
     },
@@ -141,8 +178,8 @@ export default {
             const img = document.createElement('img');
             img.src = base64;
             return faceapi
-              .detectSingleFace(img)
-              .withFaceLandmarks()
+              .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+              .withFaceLandmarks(true)
               .withFaceDescriptor()
               .then((feature) => JSON.stringify(feature.descriptor));
           }),
@@ -151,6 +188,9 @@ export default {
         if (features.includes(null)) throw new Error('');
 
         vm.$store.commit('SETFEATURES', features);
+
+        await this.getUserInfo();
+
         vm.$store.commit('SHOWMODAL', true);
         vm.spinner = false;
       } catch (error) {
